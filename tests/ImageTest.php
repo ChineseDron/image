@@ -43,6 +43,15 @@ class ImageTest extends PHPUnit_Framework_TestCase
         @unlink($save_as);
     }
 
+    public function testIsEncoded()
+    {
+        $image = $this->getTestImage();
+        $this->assertFalse($image->isEncoded());
+        
+        $image->setEncoded('foo');
+        $this->assertTrue($image->isEncoded());
+    }
+
     public function testFilter()
     {
         $demoFilter = Mockery::mock('\Intervention\Image\Filters\DemoFilter', array(15));
@@ -61,6 +70,44 @@ class ImageTest extends PHPUnit_Framework_TestCase
     {
         $image = $this->getTestImage();
         $this->assertEquals('./tmp/foo.png', $image->basePath());
+    }
+
+    /**
+     * @expectedException \Intervention\Image\Exception\RuntimeException
+     */
+    public function testGetBackupWithoutBackuo()
+    {
+        $image = $this->getTestImage();
+        $image->getBackup();
+    }
+
+    public function testSetGetBackup()
+    {
+        $image = $this->getTestImage();
+        $image->setBackup('foo');
+        $backup = $image->getBackup();
+        $this->assertEquals('foo', $backup);
+    }
+
+    public function testGetBackups()
+    {
+        $image = $this->getTestImage();
+        $backups = $image->getBackups();
+        $this->assertEquals(array(), $backups);
+
+        $image = $this->getTestImage();
+        $image->setBackup('foo');
+        $image->setBackup('bar');
+        $image->setBackup('baz');
+        $backups = $image->getBackups();
+        $this->assertEquals(array('default' => 'baz'), $backups);
+
+        $image = $this->getTestImage();
+        $image->setBackup('foo', 'a');
+        $image->setBackup('bar', 'b');
+        $image->setBackup('baz', 'c');
+        $backups = $image->getBackups();
+        $this->assertEquals(array('a' => 'foo', 'b' => 'bar', 'c' => 'baz'), $backups);
     }
 
     private function getTestImage()
